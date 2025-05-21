@@ -36,3 +36,31 @@
     transform: rotate(360deg);
   }
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body {
+  padding-top: 60px; /* Adjust based on your navbar height */
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.content {
+  flex: 1;
+  padding-top: 60px; /* Sesuaikan dengan tinggi navbar */
+} 
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
