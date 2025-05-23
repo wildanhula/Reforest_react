@@ -31,8 +31,8 @@ const Navbar = ({ activePage }) => {
         <li className={`navbar-item ${activePage === 'artikel' ? 'active' : ''}`}>
           <Link to="/artikel">Artikel</Link>
         </li>
-        <li className={`navbar-item ${activePage === 'faqs' ? 'active' : ''}`}>
-          <Link to="/faqs">FAQs</Link>
+        <li className={`navbar-item ${activePage === 'faq' ? 'active' : ''}`}>
+          <Link to="/faq">FAQs</Link>
         </li>
         <li className="navbar-profile">
           <Link to="/profile" className="profile-link">
