@@ -1,106 +1,125 @@
-/* HomePage.css */
-.homepage {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
 }
 
-/* Hero Section */
 .hero-section {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  margin-bottom: 60px;
-  padding: 40px 0;
-}
-
-.hero-content {
-  flex: 1;
-}
-
-.hero-image {
-  flex: 1;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.hero-image img {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 60vh; /* kurangin tinggi hero */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  padding-top: 80px; /* untuk navbar fixed */
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 1;
+  padding: 20px 10px 20px 180px; /* kurangin padding kanan, tambah padding kiri */
+  max-width: 900px;
+  /* hapus margin: 0 auto; */
+  color: white;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 50%;
 }
 
 .hero-content h1 {
-  font-size: 3rem;
-  color: #2e7d32;
-  margin-bottom: 15px;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 500;
-  margin-bottom: 20px;
-  color: #4a4a4a;
+  margin-bottom: 15px;
 }
 
 .hero-description {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 30px;
-  color: #555;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 25px;
+  max-width: 600px;
 }
 
 .cta-button {
   background-color: #2e7d32;
   color: white;
   border: none;
-  padding: 12px 25px;
+  padding: 10px 20px;
   font-size: 1rem;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: fit-content;
 }
 
 .cta-button:hover {
   background-color: #1b5e20;
 }
 
-/* Articles Section */
+/* === Bagian artikel full width === */
+.homepage {
+  max-width: 100%;
+  margin: 0;
+  padding: 60px 10px; /* padding kecil agar tidak menempel layar */
+}
+
 .articles-section {
-  margin-top: 60px;
+  max-width: 100%;
+  padding: 0 10px; /* agar judul dan konten tidak menempel tepi */
 }
 
 .articles-section h2 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: #2e7d32;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   text-align: center;
 }
 
 .articles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin-bottom: 30px;
+  gap: 25px;
+  margin-bottom: 25px;
+  width: 100%;
+  padding: 0;
 }
 
 .article-card {
   background: white;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease;
 }
 
 .article-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
 
 .article-image {
-  height: 200px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -108,27 +127,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.4s ease;
 }
 
 .article-card:hover .article-image img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .article-content {
-  padding: 20px;
+  padding: 15px;
 }
 
 .article-content h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
   color: #2e7d32;
 }
 
 .article-content p {
-  line-height: 1.5;
+  line-height: 1.4;
+  font-size: 0.9rem;
   color: #555;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .read-more-link {
@@ -137,8 +157,9 @@
   color: #2e7d32;
   font-weight: 600;
   text-decoration: none;
-  margin-top: 20px;
+  margin-top: 15px;
   transition: color 0.3s;
+  font-size: 0.95rem;
 }
 
 .read-more-link:hover {
@@ -146,22 +167,81 @@
   text-decoration: underline;
 }
 
-/* Responsive Design */
+.loading, .error, .empty-message {
+  text-align: center;
+  padding: 30px;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Footer styling */
+.footer {
+  background-color: #f0f0f0;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  border-top: 1px solid #ddd;
+  margin-top: 40px;
+}
+
+.footer-links {
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  margin: 0 10px;
+  color: #2e7d32;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.footer-links span {
+  margin: 0 10px;
+  color: #999;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: #999;
+}
+
 @media (max-width: 768px) {
-  .hero-section {
-    flex-direction: column;
-  }
-  
-  .hero-content, .hero-image {
-    flex: none;
-    width: 100%;
-  }
-  
   .hero-content h1 {
-    font-size: 2.2rem;
+    font-size: 2rem;
   }
-  
+
   .hero-subtitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
+
+  .hero-description {
+    font-size: 0.9rem;
+  }
+
+  .cta-button {
+    font-size: 0.9rem;
+    padding: 8px 18px;
+  }
+}
+
+/* Layout agar footer selalu di bawah */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex-grow: 1;
 }

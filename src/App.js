@@ -1,10 +1,12 @@
 import './App.css';
 import LoginSignup from './component/login/loginSignup.jsx';
 import HomePage from './component/homepage/HomePage.jsx';
-import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import ProfilePage from './component/profile/ProfilePage.jsx';
 import Artikel from './component/artikel/artikel.jsx';
+import Pohonku from './component/pohonku/Pohonku.jsx';
 import Navbar from './component/navbar/Navbar.jsx';
+import Lokasi from './component/lokasi/Lokasi.jsx';
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 
 function App() {
   return (
@@ -16,8 +18,10 @@ function App() {
         {/* Route dengan navbar */}
         <Route element={<LayoutWithNavbar />}>
           <Route path="/home" element={<HomePage />} />
+          <Route path="/lokasi" element={<Lokasi />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/artikel" element={<Artikel />} />
+          <Route path="/pohonku" element={<Pohonku />} />  {/* Route baru untuk Pohonku */}
         </Route>
       </Routes>
     </Router>
@@ -27,11 +31,13 @@ function App() {
 // Layout yang mengandung navbar
 function LayoutWithNavbar() {
   const location = useLocation();
-  
+
   const getActivePage = () => {
     if (location.pathname === '/home') return 'home';
-    if (location.pathname === '/profile') return 'pohonku';
+    if (location.pathname === '/profile') return 'profile';
     if (location.pathname === '/artikel') return 'artikel';
+    if (location.pathname === '/lokasi') return 'lokasi';
+    if (location.pathname === '/pohonku') return 'pohonku';  // pastikan key ini sesuai Navbar
     return '';
   };
 

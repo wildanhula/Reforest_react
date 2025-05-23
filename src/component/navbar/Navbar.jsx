@@ -1,17 +1,29 @@
-import React from "react";
+import React from 'react';
 import { Link } from 'react-router-dom';
-import "./Navbar.css";
+import './Navbar.css';
+import logo from '../assets/logo.png'; // Import gambar logo
 
 const Navbar = ({ activePage }) => {
   // Dummy profile image (you can replace with your actual image import)
-  const profilePic = "https://via.placeholder.com/40"; // 40x40 placeholder
+  const profilePic = "../assets/profile-placeholder.png"; // Gambar profil lokal
   
   return (
     <nav className="navbar">
-      <div className="navbar-brand">Reforest</div>
+      {/* Logo sebagai gambar lokal */}
+      <div className="navbar-brand">
+        <img 
+          src={logo} 
+          alt="Reforest Logo" 
+          className="navbar-logo"
+        />
+      </div>
+      
       <ul className="navbar-menu">
         <li className={`navbar-item ${activePage === 'home' ? 'active' : ''}`}>
           <Link to="/home">Home</Link>
+        </li>
+         <li className={`navbar-item ${activePage === 'lokasi' ? 'active' : ''}`}>
+          <Link to="/pohonku">Lokasi</Link>
         </li>
         <li className={`navbar-item ${activePage === 'pohonku' ? 'active' : ''}`}>
           <Link to="/pohonku">Pohonku</Link>

@@ -246,18 +246,6 @@ const LoginSignup = () => {
             )}
           </div>
 
-          <div className="extra-options">
-            <label>
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              Remember me
-            </label>
-            {action === 'Login' && <a href="#">Forgot Password?</a>}
-          </div>
-
           <div className="submit-container">
             <button type="submit" className="submit" disabled={isLoading}>
               {isLoading ? 'Processing...' : action}
