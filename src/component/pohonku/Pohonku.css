@@ -1,3 +1,4 @@
+/* Pohonku Container */
 .pohonku-container {
   width: 100%;
   margin: 80px 20px 10px 20px;
@@ -17,7 +18,7 @@
   width: 100%;
   margin-bottom: 20px;
   display: flex;
-  flex-direction: column; /* ubah jadi vertikal */
+  flex-direction: column; /* Vertical layout */
   gap: 20px;
 }
 
@@ -27,7 +28,7 @@
   overflow: hidden;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   display: flex;
-  flex-direction: row; /* horizontal: gambar kiri, konten kanan */
+  flex-direction: row; /* Image left, content right */
   align-items: stretch;
   cursor: pointer;
   gap: 16px;
@@ -133,6 +134,150 @@
   color: #c0392b;
 }
 
+/* Floating Add Button */
+.floating-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #27ae60;
+  color: white;
+  font-size: 36px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  z-index: 999;
+}
+
+.floating-btn:hover {
+  background-color: #219150;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 16px;
+  width: 80%;
+  max-width: 600px; /* increased width for better content space */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: #27ae60;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 10px;
+  color: #34495e;
+  font-size: 1rem;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.modal-content input[type="file"] {
+  padding: 0;
+}
+
+.image-preview {
+  width: 100%;
+  max-width: 200px;
+  margin-top: 10px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Modal Buttons (Simpan and Batal) */
+
+.btn-submit,
+.btn-cancel {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border: none;
+  user-select: none;
+  width: 48%; /* Ensures the buttons are evenly spaced */
+}
+
+/* Save Button (Simpan) */
+.btn-submit {
+  background-color: #27ae60; /* Green color for the Save button */
+  color: white;
+}
+
+.btn-submit:hover {
+  background-color: #219150; /* Darker green on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Cancel Button (Batal) */
+.btn-cancel {
+  background-color: #e74c3c; /* Red color for the Cancel button */
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #c0392b; /* Darker red on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Button active (when pressed) */
+.btn-submit:active,
+.btn-cancel:active {
+  transform: scale(0.98); /* Shrinks the button when clicked */
+}
+
+/* Map Container Style */
+.leaflet-container {
+  z-index: 0;
+  margin-bottom: 20px; /* Added space between the map and buttons */
+}
+
+.leaflet-control-attribution {
+  font-size: 10px;
+}
+
+.leaflet-marker-icon {
+  width: 32px;
+  height: 32px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .pohonku-row {
@@ -147,5 +292,9 @@
     width: 100%;
     height: 220px;
     border-radius: 16px 16px 0 0;
+  }
+
+  .modal-content {
+    width: 90%;
   }
 }

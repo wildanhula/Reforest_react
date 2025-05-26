@@ -81,9 +81,7 @@ const FAQ = () => {
                       className={`faq-content ${isOpen ? 'show' : ''}`}
                     >
                       <p>{faq.answer}</p>
-                      {faq.user && (
-                        <small className="faq-user">Oleh: {faq.user.name}</small>
-                      )}
+                     
                     </div>
                   </div>
                 );
