@@ -44,7 +44,7 @@ const Pohonku = () => {
   useEffect(() => {
     const fetchPohonData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/pohonku/all');
+        const response = await fetch('http://localhost:8000/api/pohonku/all');
         if (!response.ok) throw new Error('Gagal mengambil data dari API');
         const result = await response.json();
         if (result.status === 'success') {
@@ -260,7 +260,7 @@ const Pohonku = () => {
       )}
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="pohonku-footer">
         <div className="footer-links">
           <span>Syarat dan Ketentuan</span>
           <Link to="/faq">FAQ</Link>

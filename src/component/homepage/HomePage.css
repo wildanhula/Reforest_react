@@ -14,12 +14,12 @@ body {
 
 .hero-section {
   width: 100%;
-  height: 60vh; /* kurangin tinggi hero */
+  height: 60vh; /* Kurangi tinggi hero */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
-  padding-top: 80px; /* untuk navbar fixed */
+  padding-top: 80px; /* Untuk navbar fixed */
 }
 
 .hero-section::before {
@@ -33,9 +33,8 @@ body {
 .hero-overlay {
   position: relative;
   z-index: 1;
-  padding: 20px 10px 20px 180px; /* kurangin padding kanan, tambah padding kiri */
+  padding: 20px 10px 20px 180px; /* Kurangi padding kanan, tambah padding kiri */
   max-width: 900px;
-  /* hapus margin: 0 auto; */
   color: white;
   text-align: left;
   display: flex;
@@ -82,12 +81,12 @@ body {
 .homepage {
   max-width: 100%;
   margin: 0;
-  padding: 60px 10px; /* padding kecil agar tidak menempel layar */
+  padding: 60px 10px; /* Padding kecil agar tidak menempel layar */
 }
 
 .articles-section {
   max-width: 100%;
-  padding: 0 10px; /* agar judul dan konten tidak menempel tepi */
+  padding: 0 10px; /* Agar judul dan konten tidak menempel tepi */
 }
 
 .articles-section h2 {
@@ -244,4 +243,56 @@ html, body, #root {
 
 .content {
   flex-grow: 1;
+}
+
+/* HomePage.css */
+
+.stats-section {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f4f7fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stats-section h2 {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  flex-wrap: wrap; /* Memungkinkan elemen untuk membungkus pada perangkat kecil */
+}
+
+.stat-item {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 30%;
+  max-width: 300px; /* Memberikan batas lebar maksimal */
+  margin: 10px auto; /* Agar elemen berada di tengah */
+}
+
+.stat-item h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.stat-item p, .stat-item ul {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.stat-item ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.stat-item li {
+  margin: 5px 0;
 }

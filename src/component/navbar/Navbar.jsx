@@ -23,7 +23,7 @@ const Navbar = ({ activePage }) => {
           <Link to="/home">Home</Link>
         </li>
          <li className={`navbar-item ${activePage === 'lokasi' ? 'active' : ''}`}>
-          <Link to="/pohonku">Lokasi</Link>
+          <Link to="/lokasi">Lokasi</Link>
         </li>
         <li className={`navbar-item ${activePage === 'pohonku' ? 'active' : ''}`}>
           <Link to="/pohonku">Pohonku</Link>

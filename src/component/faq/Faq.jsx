@@ -11,7 +11,7 @@ const FAQ = () => {
   useEffect(() => {
     const fetchFaq = async () => {
       try {
-        const response = await fetch('http://localhost:8000/faq/all');
+        const response = await fetch('http://localhost:8000/api/faq/all');
         if (!response.ok) throw new Error('Gagal mengambil data dari API');
         const result = await response.json();
         if (result.status === 'success') {
