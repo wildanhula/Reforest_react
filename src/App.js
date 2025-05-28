@@ -1,9 +1,10 @@
 import './App.css';
 import LoginSignup from './component/login/loginSignup.jsx';
+import LandingPage from './component/landingpage/LandingPage.jsx';
 import HomePage from './component/homepage/HomePage.jsx';
 import ProfilePage from './component/profile/ProfilePage.jsx';
 import Artikel from './component/artikel/artikel.jsx';
-import Pohonku from './component/pohonku/pohonku.jsx';
+import Pohonku from './component/pohonku/Pohonku.jsx';
 import Navbar from './component/navbar/Navbar.jsx';
 import Lokasi from './component/lokasi/Lokasi.jsx';
 import Faq from './component/faq/Faq.jsx';
@@ -14,7 +15,7 @@ function App() {
     <Router>
       <Routes>
         {/* Route tanpa navbar */}
-        <Route path="/" element={<LoginSignup />} />
+        <Route path="/" element={<LandingPage />} />
         
         {/* Route dengan navbar */}
         <Route element={<LayoutWithNavbar />}>
