@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 import heroImg from '../assets/hero2.jpg';
 
@@ -7,6 +7,7 @@ const LandingPage = () => {
   const [artikelData, setArtikelData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
   
   // State untuk statistik
   const [stats, setStats] = useState({
@@ -68,8 +69,18 @@ const LandingPage = () => {
     <>
       {/* Tombol Login dan Register */}
       <div className="top-right-buttons">
-        <Link to="/login" className="btn login-btn">Login</Link>
-        <Link to="/register" className="btn register-btn">Register</Link>
+        <button 
+          className="btn login-btn" 
+          onClick={() => navigate('/auth/login')}
+        >
+          Login
+        </button>
+        <button 
+          className="btn register-btn"
+          onClick={() => navigate('/auth/signup')}
+          >
+            Register
+        </button>
       </div>
 
       <section
