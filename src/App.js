@@ -16,6 +16,7 @@ function App() {
       <Routes>
         {/* Route tanpa navbar */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/auth/:actionType" element={<LoginSignup />} />
         
         {/* Route dengan navbar */}
         <Route element={<LayoutWithNavbar />}>

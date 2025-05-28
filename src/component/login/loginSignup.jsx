@@ -4,15 +4,21 @@ import user_ic from '../assets/person_ic.png';
 import email_ic from '../assets/email_ic.png';
 import password_ic from '../assets/password_ic.png';
 import tree_illustration from '../assets/planting_Ilus.jpg';
+import { useParams } from 'react-router-dom';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/auth';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+
 
 const LoginSignup = () => {
-  const [action, setAction] = useState('Login');
-  const [formData, setFormData] = useState({
+  const { actionType } = useParams();
+  const defaultAction = actionType === 'signup' ? 'Sign Up' : 'Login';
+const [action, setAction] = useState(defaultAction);
+  const [formData, setFormData] = useState
+  ({
     username: '',
-    F_name: '',
-    L_name: '',
+    name: '',
     email: '',
     password: '',
     password_confirmation: '',
@@ -40,7 +46,7 @@ const LoginSignup = () => {
     
     if (action === 'Sign Up') {
       if (!formData.username) newErrors.username = 'Username is required';
-      if (!formData.F_name) newErrors.F_name = 'First name is required';
+      if (!formData.name) newErrors.name = 'Name is required';
       if (!formData.password_confirmation) {
         newErrors.password_confirmation = 'Please confirm your password';
       } else if (formData.password !== formData.password_confirmation) {
@@ -93,8 +99,7 @@ const LoginSignup = () => {
         password: formData.password,
         ...(action === 'Sign Up' && {
           username: formData.username,
-          F_name: formData.F_name,
-          L_name: formData.L_name || null,
+          name: formData.name,
           password_confirmation: formData.password_confirmation
         })
       };
@@ -126,8 +131,7 @@ const LoginSignup = () => {
     // Reset form when switching
     setFormData({
       username: '',
-      F_name: '',
-      L_name: '',
+      name: '',
       email: '',
       password: '',
       password_confirmation: '',
@@ -171,30 +175,17 @@ const LoginSignup = () => {
             {action === 'Sign Up' && (
               <>
                 <div className="input-wrapper">
-                  <label htmlFor="F_name">First Name</label>
+                  <label htmlFor="name">Name</label>
                   <div className="input">
                     <img src={user_ic} alt="user icon" />
                     <input
                       type="text"
-                      name="F_name"
-                      value={formData.F_name}
+                      name="name"
+                      value={formData.name}
                       onChange={handleChange}
                     />
                   </div>
-                  {errors.F_name && <span className="error">{errors.F_name}</span>}
-                </div>
-
-                <div className="input-wrapper">
-                  <label htmlFor="L_name">Last Name (Optional)</label>
-                  <div className="input">
-                    <img src={user_ic} alt="user icon" />
-                    <input
-                      type="text"
-                      name="L_name"
-                      value={formData.L_name}
-                      onChange={handleChange}
-                    />
-                  </div>
+                  {errors.name && <span className="error">{errors.name}</span>}
                 </div>
               </>
             )}
