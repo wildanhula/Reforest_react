@@ -8,35 +8,77 @@ import Navbar from './component/navbar/Navbar.jsx';
 import Lokasi from './component/lokasi/Lokasi.jsx';
 import Faq from './component/faq/Faq.jsx';
 import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
+import ProtectedRoute from './component/ProtectedRoute'; // Impor ProtectedRoute
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Route for HomePage with Navbar */}
+        {/* Route for HomePage with Navbar (no login required) */}
         <Route path="/" element={<HomepageLayoutWithNavbar />} />  {/* Homepage layout with Navbar */}
-        
+
         {/* Route for Login */}
         <Route path="/login" element={<LoginSignup />} />
         <Route path="/login#signup" element={<LoginSignup />} />
 
-        {/* Route with Navbar for other pages */}
+        {/* Route with Navbar for other pages, protected by ProtectedRoute */}
         <Route element={<LayoutWithNavbar />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/lokasi" element={<Lokasi />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/artikel" element={<Artikel />} />
-          <Route path="/faq" element={<Faq />} />
-          <Route path="/pohonku" element={<Pohonku />} />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lokasi"
+            element={
+              <ProtectedRoute>
+                <Lokasi />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artikel"
+            element={
+              <ProtectedRoute>
+                <Artikel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faq"
+            element={
+              <ProtectedRoute>
+                <Faq />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pohonku"
+            element={
+              <ProtectedRoute>
+                <Pohonku />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </Router>
   );
 }
 
-// Layout for homepage with Navbar
+// Layout for homepage with Navbar (no login required)
 function HomepageLayoutWithNavbar() {
-  
   return (
     <div className="app-layout">
       <Navbar activePage="home" />
@@ -47,7 +89,7 @@ function HomepageLayoutWithNavbar() {
   );
 }
 
-// Layout with Navbar for other pages
+// Layout with Navbar for other pages (protected)
 function LayoutWithNavbar() {
   const location = useLocation();
 
