@@ -13,12 +13,14 @@ function App() {
   return (
     <Router>
       <Routes>
-       {/* Route for HomePage, which is the default landing page */}
-        <Route path="/" element={<HomePage />} />  {/* This will be the homepage */}
-        {/* Route untuk Login */}
+        {/* Route for HomePage with Navbar */}
+        <Route path="/" element={<HomepageLayoutWithNavbar />} />  {/* Homepage layout with Navbar */}
+        
+        {/* Route for Login */}
         <Route path="/login" element={<LoginSignup />} />
+        <Route path="/login#signup" element={<LoginSignup />} />
 
-        {/* Route dengan navbar */}
+        {/* Route with Navbar for other pages */}
         <Route element={<LayoutWithNavbar />}>
           <Route path="/home" element={<HomePage />} />
           <Route path="/lokasi" element={<Lokasi />} />
@@ -32,6 +34,20 @@ function App() {
   );
 }
 
+// Layout for homepage with Navbar
+function HomepageLayoutWithNavbar() {
+  
+  return (
+    <div className="app-layout">
+      <Navbar activePage="home" />
+      <div className="content">
+        <HomePage /> {/* Directly render the homepage */}
+      </div>
+    </div>
+  );
+}
+
+// Layout with Navbar for other pages
 function LayoutWithNavbar() {
   const location = useLocation();
 
@@ -49,7 +65,7 @@ function LayoutWithNavbar() {
     <div className="app-layout">
       <Navbar activePage={getActivePage()} />
       <div className="content">
-        <Outlet />
+        <Outlet /> {/* This will render the content of child routes */}
       </div>
     </div>
   );

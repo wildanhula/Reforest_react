@@ -66,8 +66,12 @@ const HomePage = () => {
         }
 
         const result = await response.json();
-        if (result.success) {
-          setStats(result.data);
+
+        // Debugging: Tampilkan data yang diterima dari API
+        console.log('Data Statistik:', result);
+
+        if (result.status === 'success') {
+          setStats(result.data); // Set data statistik jika berhasil
         }
       } catch (err) {
         console.error('Gagal mengambil data statistik:', err);
@@ -84,12 +88,8 @@ const HomePage = () => {
   if (loading) return <div className="loading">Memuat data...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
-  // Cek apakah pengguna sudah login
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-
   return (
     <>
-
       <section className="hero-section" style={{ backgroundImage: `url(${heroImg})` }}>
         <div className="hero-overlay">
           <div className="hero-content">

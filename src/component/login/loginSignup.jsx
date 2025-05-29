@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate untuk navigasi
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';  // Import useNavigate dan useLocation
 import './loginSignup.css';
 import user_ic from '../assets/person_ic.png';
 import email_ic from '../assets/email_ic.png';
@@ -20,6 +20,16 @@ const LoginSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();  // Initialize navigate hook
+  const location = useLocation(); // Hook untuk mendapatkan informasi location saat ini
+
+  // Mengecek hash URL untuk menyesuaikan section yang ditampilkan
+  useEffect(() => {
+    if (location.hash === '#signup') {
+      setAction('Sign Up');
+    } else {
+      setAction('Login');
+    }
+  }, [location.hash]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -88,3 +88,35 @@
   transform: scale(1.1);
   border-color: #000;
 }
+.auth-buttons {
+  margin-left: auto; /* Align buttons to the right */
+  display: flex;
+  gap: 15px;
+}
+
+.auth-button {
+  background-color: #4CAF50; /* Customize the button color */
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  position: relative; /* For positioning the counter */
+}
+
+.auth-button:hover {
+  background-color: #45a049; /* Button hover effect */
+}
+
+/* Styling the counter */
+.auth-counter {
+  background-color: #fff;
+  color: #4CAF50;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 50%;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-weight: bold;
+}
