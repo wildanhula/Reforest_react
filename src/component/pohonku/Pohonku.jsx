@@ -35,57 +35,57 @@ const Pohonku = () => {
     tanggal_tanam: '',
     lat: '',
     long: '',
-    user_id: 1, // Default user ID - sesuaikan dengan kebutuhan
     gambar: null,
     gambarPreview: null,
     lokasi: { lat: -7.7839, lng: 110.3679 }, 
   });
 
-  // Fetch data from backend
-  useEffect(() => {
-    const fetchPohonData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('http://localhost:8000/api/pohonku/all', {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('API Response:', result);
-        
-        // Sesuaikan dengan struktur response baru
-        if (result.success === true || result.status === 'success') {
-          // result.data sekarang langsung array pohon
-          const dataArray = Array.isArray(result.data) ? result.data : [];
-          setPohonData(dataArray);
-          console.log('Data loaded:', dataArray.length, 'items');
-        } else {
-          throw new Error(result.message || 'Terjadi kesalahan pada server');
-        }
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err.message); 
-        setPohonData([]); // Set empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
+  const user = JSON.parse(localStorage.getItem('user')); // Ambil data user dari localStorage
 
-    fetchPohonData();
+  // Fetch data from backend
+  const fetchPohonData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:8000/api/pohonku/all', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('API Response:', result);
+
+      // Sesuaikan dengan struktur response baru
+      if (result.success === true || result.status === 'success') {
+        const dataArray = Array.isArray(result.data) ? result.data : [];
+        setPohonData(dataArray);
+        console.log('Data loaded:', dataArray.length, 'items');
+      } else {
+        throw new Error(result.message || 'Terjadi kesalahan pada server');
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError(err.message); 
+      setPohonData([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPohonData();  // Fetch initial pohon data
   }, []);
 
   // Handle edit for a tree
   const handleEdit = (pohon) => {
     setNewPohon({
       ...pohon,
-      gambarPreview: pohon.gambarUrl || DUMMY_IMAGE_URL, // Ensure gambarUrl is used from the API
+      gambarPreview: pohon.gambarUrl || DUMMY_IMAGE_URL, 
       lokasi: { lat: parseFloat(pohon.lat), lng: parseFloat(pohon.long) },
     });
     setShowModal(true);
@@ -102,10 +102,10 @@ const Pohonku = () => {
             'Content-Type': 'application/json',
           },
         });
-        
+
         const result = await response.json();
         console.log('Delete response:', result);
-        
+
         if (result.success === true) {
           alert('Pohon berhasil dihapus');
           // Update state to remove deleted item
@@ -134,13 +134,11 @@ const Pohonku = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert('Ukuran file terlalu besar. Maksimal 5MB.');
       return;
     }
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       alert('Format file tidak didukung. Gunakan JPEG, PNG, atau GIF.');
@@ -158,7 +156,6 @@ const Pohonku = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!newPohon.namaPohon || !newPohon.jenis_pohon || !newPohon.tanggal_tanam) {
       alert('Mohon lengkapi semua field yang wajib diisi');
       return;
@@ -180,7 +177,7 @@ const Pohonku = () => {
     formData.append('tanggal_tanam', newPohon.tanggal_tanam);
     formData.append('lat', newPohon.lat);
     formData.append('long', newPohon.long);
-    formData.append('user_id', newPohon.user_id);
+    formData.append('user_id', user ? user.id : 1); // Use user ID from localStorage
     
     if (newPohon.gambar) {
       formData.append('image', newPohon.gambar);
@@ -202,19 +199,10 @@ const Pohonku = () => {
 
       if (result.status === 'success') {
         alert(`${newPohon.id ? 'Pohon berhasil diperbarui' : 'Pohon berhasil ditambahkan'}`);
-        
-        if (newPohon.id) {
-          // Update existing item
-          setPohonData(prevData => 
-            prevData.map(pohon => 
-              pohon.id === newPohon.id ? { ...pohon, ...result.data.pohon } : pohon
-            )
-          );
-        } else {
-          // Add new item
-          setPohonData(prevData => [...prevData, result.data.pohon]);
-        }
-        
+
+        // Refresh the pohon data after successful add or update
+        fetchPohonData();
+
         setShowModal(false);
         resetForm();
       } else {
@@ -235,7 +223,7 @@ const Pohonku = () => {
       tanggal_tanam: '',
       lat: '',
       long: '',
-      user_id: 1,
+      user_id: user ? user.id : 1,  // Ensure the user_id is updated
       gambar: null,
       gambarPreview: null,
       lokasi: { lat: -7.7839, lng: 110.3679 }, 
