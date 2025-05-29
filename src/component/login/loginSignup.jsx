@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate untuk navigasi
 import './loginSignup.css';
 import user_ic from '../assets/person_ic.png';
 import email_ic from '../assets/email_ic.png';
@@ -11,15 +12,14 @@ const LoginSignup = () => {
   const [action, setAction] = useState('Login');
   const [formData, setFormData] = useState({
     username: '',
-    F_name: '',
-    L_name: '',
     email: '',
     password: '',
     password_confirmation: '',
   });
   const [errors, setErrors] = useState({});
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();  // Initialize navigate hook
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,13 +34,12 @@ const LoginSignup = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) newErrors.email = 'Email is required';
     if (!formData.password) newErrors.password = 'Password is required';
-    
+
     if (action === 'Sign Up') {
       if (!formData.username) newErrors.username = 'Username is required';
-      if (!formData.F_name) newErrors.F_name = 'First name is required';
       if (!formData.password_confirmation) {
         newErrors.password_confirmation = 'Please confirm your password';
       } else if (formData.password !== formData.password_confirmation) {
@@ -59,17 +58,15 @@ const LoginSignup = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
         },
         body: JSON.stringify(data),
-        credentials: rememberMe ? 'include' : 'same-origin'
       });
 
       const responseData = await response.json();
 
       if (!response.ok) {
-        const errorMessage = responseData.message || 
-          (responseData.errors ? Object.values(responseData.errors).flat().join(', ') : 'Authentication failed');
+        const errorMessage = responseData.message || (responseData.errors ? Object.values(responseData.errors).flat().join(', ') : 'Authentication failed');
         throw new Error(errorMessage);
       }
 
@@ -93,28 +90,34 @@ const LoginSignup = () => {
         password: formData.password,
         ...(action === 'Sign Up' && {
           username: formData.username,
-          F_name: formData.F_name,
-          L_name: formData.L_name || null,
-          password_confirmation: formData.password_confirmation
-        })
+          password_confirmation: formData.password_confirmation,
+        }),
       };
 
       const data = await handleAuthRequest(endpoint, payload);
-      
-      // Handle successful authentication
-      if ((action === 'Login' && data.status === 'Success') || 
-          (action === 'Sign Up' && data.status === 'success')) {
-        
-        // Save user data to localStorage or sessionStorage if needed
-        if (rememberMe) {
-          localStorage.setItem('user', JSON.stringify(action === 'Login' ? data.data.user : data.data));
+
+      if ((action === 'Login' && data.status === 'success') || (action === 'Sign Up' && data.status === 'success')) {
+        // Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+
+        // After successful registration, switch to Login
+        if (action === 'Sign Up') {
+          // Automatically switch to login section after successful signup
+          setAction('Login');
+          setFormData({
+            username: '',
+            email: '',
+            password: '',
+            password_confirmation: '',
+          });
+
+          // Navigate to the login section
+          navigate('/login');  // Redirect to login page
+        } else {
+          // After successful login, navigate to the dashboard
+          navigate('/home');  // Redirect to /home (dashboard) page
         }
-        
-        alert(`${action} successful!`);
-        // Here you would typically redirect to dashboard page
-        // window.location.href = '/dashboard';
       }
-      
     } catch (error) {
       setErrors({ ...errors, apiError: error.message });
     }
@@ -123,11 +126,8 @@ const LoginSignup = () => {
   const toggleAction = () => {
     setAction(action === 'Login' ? 'Sign Up' : 'Login');
     setErrors({});
-    // Reset form when switching
     setFormData({
       username: '',
-      F_name: '',
-      L_name: '',
       email: '',
       password: '',
       password_confirmation: '',
@@ -136,7 +136,6 @@ const LoginSignup = () => {
 
   return (
     <div className="login-page">
-      {/* Left side - Form */}
       <div className="form-side">
         <form onSubmit={handleSubmit}>
           <div className="logo">🌱 Reforest</div>
@@ -166,37 +165,6 @@ const LoginSignup = () => {
                 </div>
                 {errors.username && <span className="error">{errors.username}</span>}
               </div>
-            )}
-
-            {action === 'Sign Up' && (
-              <>
-                <div className="input-wrapper">
-                  <label htmlFor="F_name">First Name</label>
-                  <div className="input">
-                    <img src={user_ic} alt="user icon" />
-                    <input
-                      type="text"
-                      name="F_name"
-                      value={formData.F_name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.F_name && <span className="error">{errors.F_name}</span>}
-                </div>
-
-                <div className="input-wrapper">
-                  <label htmlFor="L_name">Last Name (Optional)</label>
-                  <div className="input">
-                    <img src={user_ic} alt="user icon" />
-                    <input
-                      type="text"
-                      name="L_name"
-                      value={formData.L_name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </>
             )}
 
             <div className="input-wrapper">
@@ -268,7 +236,6 @@ const LoginSignup = () => {
         </div>
       </div>
 
-      {/* Right side - Illustration */}
       <div className="image-side">
         <img src={tree_illustration} alt="Tree Illustration" />
       </div>

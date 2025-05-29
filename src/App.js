@@ -13,9 +13,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Route tanpa navbar */}
-        <Route path="/" element={<LoginSignup />} />
-        
+       {/* Route for HomePage, which is the default landing page */}
+        <Route path="/" element={<HomePage />} />  {/* This will be the homepage */}
+        {/* Route untuk Login */}
+        <Route path="/login" element={<LoginSignup />} />
+
         {/* Route dengan navbar */}
         <Route element={<LayoutWithNavbar />}>
           <Route path="/home" element={<HomePage />} />
@@ -23,14 +25,13 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/artikel" element={<Artikel />} />
           <Route path="/faq" element={<Faq />} />
-          <Route path="/pohonku" element={<Pohonku />} />  {/* Route baru untuk Pohonku */}
+          <Route path="/pohonku" element={<Pohonku />} />
         </Route>
       </Routes>
     </Router>
   );
 }
 
-// Layout yang mengandung navbar
 function LayoutWithNavbar() {
   const location = useLocation();
 
@@ -40,7 +41,7 @@ function LayoutWithNavbar() {
     if (location.pathname === '/artikel') return 'artikel';
     if (location.pathname === '/lokasi') return 'lokasi';
     if (location.pathname === '/faq') return 'faq';
-    if (location.pathname === '/pohonku') return 'pohonku';  // pastikan key ini sesuai Navbar
+    if (location.pathname === '/pohonku') return 'pohonku';
     return '';
   };
 
@@ -48,7 +49,7 @@ function LayoutWithNavbar() {
     <div className="app-layout">
       <Navbar activePage={getActivePage()} />
       <div className="content">
-        <Outlet /> {/* Ini akan merender child route */}
+        <Outlet />
       </div>
     </div>
   );

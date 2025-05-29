@@ -296,3 +296,28 @@ html, body, #root {
 .stat-item li {
   margin: 5px 0;
 }
+
+/* Styling tombol login dan signup */
+.auth-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.auth-button {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.3s;
+  text-decoration: none;
+}
+
+.auth-button:hover {
+  background-color: #1b5e20;
+}

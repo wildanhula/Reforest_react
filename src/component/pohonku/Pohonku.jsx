@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect from React
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom for navigation
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"; // For Map components
-import L from "leaflet"; // For Leaflet custom markers
-import './Pohonku.css'; // Import CSS for styling
+import React, { useState, useEffect } from 'react'; 
+import { Link } from 'react-router-dom'; 
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"; 
+import L from "leaflet"; 
+import './Pohonku.css'; 
 
-// Custom marker icon supaya gak default icon leaflet (biar lebih keren)
+// Custom marker icon supaya gak default icon leaflet
 const customIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // icon pohon kecil
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", 
   iconSize: [32, 32],
   iconAnchor: [16, 32],
 });
@@ -14,11 +14,10 @@ const customIcon = new L.Icon({
 const LocationPicker = ({ position, setPosition }) => {
   useMapEvents({
     click(e) {
-      setPosition(e.latlng); // Update position when user clicks on map
+      setPosition(e.latlng); 
     },
   });
 
-  // Only render the marker when position is valid
   return position ? <Marker position={position} icon={customIcon} /> : null;
 };
 
@@ -28,7 +27,7 @@ const Pohonku = () => {
   const [pohonData, setPohonData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);  // State to control modal visibility
+  const [showModal, setShowModal] = useState(false);
   const [newPohon, setNewPohon] = useState({
     id: '',
     namaPohon: '',
@@ -36,25 +35,45 @@ const Pohonku = () => {
     tanggal_tanam: '',
     lat: '',
     long: '',
+    user_id: 1, // Default user ID - sesuaikan dengan kebutuhan
     gambar: null,
     gambarPreview: null,
-    lokasi: { lat: -7.7839, lng: 110.3679 }, // Default location
+    lokasi: { lat: -7.7839, lng: 110.3679 }, 
   });
 
+  // Fetch data from backend
   useEffect(() => {
     const fetchPohonData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/pohonku/all');
-        if (!response.ok) throw new Error('Gagal mengambil data dari API');
+        setLoading(true);
+        const response = await fetch('http://localhost:8000/api/pohonku/all', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
         const result = await response.json();
-        if (result.status === 'success') {
-          setPohonData(result.data.pohonku);
+        console.log('API Response:', result);
+        
+        // Sesuaikan dengan struktur response baru
+        if (result.success === true || result.status === 'success') {
+          // result.data sekarang langsung array pohon
+          const dataArray = Array.isArray(result.data) ? result.data : [];
+          setPohonData(dataArray);
+          console.log('Data loaded:', dataArray.length, 'items');
         } else {
           throw new Error(result.message || 'Terjadi kesalahan pada server');
         }
-        setLoading(false);
       } catch (err) {
-        setError(err.message);
+        console.error('Fetch error:', err);
+        setError(err.message); 
+        setPohonData([]); // Set empty array on error
+      } finally {
         setLoading(false);
       }
     };
@@ -62,20 +81,46 @@ const Pohonku = () => {
     fetchPohonData();
   }, []);
 
+  // Handle edit for a tree
   const handleEdit = (pohon) => {
     setNewPohon({
       ...pohon,
-      gambarPreview: pohon.gambarUrl || DUMMY_IMAGE_URL, // Show existing image in modal
+      gambarPreview: pohon.gambarUrl || DUMMY_IMAGE_URL, // Ensure gambarUrl is used from the API
+      lokasi: { lat: parseFloat(pohon.lat), lng: parseFloat(pohon.long) },
     });
-    setShowModal(true); // Open the modal for editing
+    setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  // Handle delete for a tree
+  const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus data pohon ini?')) {
-      alert(`Hapus pohon dengan ID: ${id}`);
+      try {
+        const response = await fetch(`http://localhost:8000/api/pohonku/delete/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        const result = await response.json();
+        console.log('Delete response:', result);
+        
+        if (result.success === true) {
+          alert('Pohon berhasil dihapus');
+          // Update state to remove deleted item
+          setPohonData(prevData => prevData.filter(pohon => pohon.id !== id));
+        } else {
+          alert(result.message || 'Gagal menghapus pohon');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Terjadi kesalahan saat menghapus pohon');
+      }
     }
   };
 
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewPohon(prevState => ({
@@ -84,9 +129,23 @@ const Pohonku = () => {
     }));
   };
 
+  // Handle image change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar. Maksimal 5MB.');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Format file tidak didukung. Gunakan JPEG, PNG, atau GIF.');
+      return;
+    }
 
     setNewPohon(prev => ({
       ...prev,
@@ -95,42 +154,109 @@ const Pohonku = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission for adding or updating a tree
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // If editing, update data, otherwise add new tree
-    if (newPohon.id) {
-      // Here you should perform the update logic (e.g., API call to update data)
-      alert(`Pohon dengan ID ${newPohon.id} diperbarui: ${JSON.stringify(newPohon)}`);
-    } else {
-      // Here you should perform the add new tree logic (e.g., API call to add data)
-      alert(`Pohon Baru: ${JSON.stringify(newPohon)}`);
+
+    // Validation
+    if (!newPohon.namaPohon || !newPohon.jenis_pohon || !newPohon.tanggal_tanam) {
+      alert('Mohon lengkapi semua field yang wajib diisi');
+      return;
     }
-    setShowModal(false); // Close modal after submit
+
+    if (!newPohon.lat || !newPohon.long) {
+      alert('Mohon pilih lokasi di peta');
+      return;
+    }
+
+    if (!newPohon.id && !newPohon.gambar) {
+      alert('Mohon pilih gambar untuk pohon baru');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('namaPohon', newPohon.namaPohon);
+    formData.append('jenis_pohon', newPohon.jenis_pohon);
+    formData.append('tanggal_tanam', newPohon.tanggal_tanam);
+    formData.append('lat', newPohon.lat);
+    formData.append('long', newPohon.long);
+    formData.append('user_id', newPohon.user_id);
+    
+    if (newPohon.gambar) {
+      formData.append('image', newPohon.gambar);
+    }
+
+    try {
+      const endpoint = newPohon.id 
+        ? `http://localhost:8000/api/pohonku/update/${newPohon.id}` 
+        : 'http://localhost:8000/api/pohonku/post';
+      const method = newPohon.id ? 'PUT' : 'POST';
+
+      const response = await fetch(endpoint, {
+        method: method,
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log('Submit response:', result);
+
+      if (result.status === 'success') {
+        alert(`${newPohon.id ? 'Pohon berhasil diperbarui' : 'Pohon berhasil ditambahkan'}`);
+        
+        if (newPohon.id) {
+          // Update existing item
+          setPohonData(prevData => 
+            prevData.map(pohon => 
+              pohon.id === newPohon.id ? { ...pohon, ...result.data.pohon } : pohon
+            )
+          );
+        } else {
+          // Add new item
+          setPohonData(prevData => [...prevData, result.data.pohon]);
+        }
+        
+        setShowModal(false);
+        resetForm();
+      } else {
+        alert(result.message || 'Gagal menyimpan pohon');
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      alert('Terjadi kesalahan saat menyimpan data');
+    }
   };
 
-  const handleOpenModal = () => {
+  // Reset form
+  const resetForm = () => {
     setNewPohon({
-      id: '', // Reset ID for new tree
+      id: '', 
       namaPohon: '',
       jenis_pohon: '',
       tanggal_tanam: '',
       lat: '',
       long: '',
+      user_id: 1,
       gambar: null,
       gambarPreview: null,
-      lokasi: { lat: -7.7839, lng: 110.3679 }, // Default location
+      lokasi: { lat: -7.7839, lng: 110.3679 }, 
     });
-    setShowModal(true); // Open the modal for adding a new tree
+  };
+
+  // Modal logic
+  const handleOpenModal = () => {
+    resetForm();
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
+    resetForm();
   };
 
   const handlePositionChange = (position) => {
     setNewPohon(prev => ({
       ...prev,
-      lokasi: position, // Update the location in the state
+      lokasi: position, 
       lat: position.lat,
       long: position.lng,
     }));
@@ -138,7 +264,6 @@ const Pohonku = () => {
 
   if (loading) return <div className="pohonku-loading">Memuat data pohon...</div>;
   if (error) return <div className="pohonku-error">Error: {error}</div>;
-  if (pohonData.length === 0) return <div className="pohonku-empty-message">Data pohon kosong.</div>;
 
   return (
     <>
@@ -149,7 +274,7 @@ const Pohonku = () => {
             <div key={pohon.id} className="pohonku-item">
               <div className="pohonku-image-container">
                 <img
-                  src={pohon.gambarUrl || DUMMY_IMAGE_URL}
+                  src={pohon.images[0] ? `http://localhost:8000/storage/images/${pohon.images[0].filename}` : DUMMY_IMAGE_URL}
                   alt={pohon.namaPohon}
                   className="pohonku-image"
                 />
@@ -159,7 +284,6 @@ const Pohonku = () => {
                 <p><strong>Jenis Pohon:</strong> {pohon.jenis_pohon}</p>
                 <p><strong>Tanggal Tanam:</strong> {new Date(pohon.tanggal_tanam).toLocaleDateString()}</p>
                 <p><strong>Lokasi:</strong> Lat {pohon.lat}, Long {pohon.long}</p>
-                {pohon.user && <p><strong>Penanam:</strong> {pohon.user.name}</p>}
                 <div className="pohonku-button-group">
                   <button className="pohonku-btn pohonku-btn-edit" onClick={() => handleEdit(pohon)}>
                     Edit
@@ -174,82 +298,33 @@ const Pohonku = () => {
         </div>
       </div>
 
-      {/* Floating Add Button */}
       <button className="floating-btn" onClick={handleOpenModal}>
         +
       </button>
 
-      {/* Modal for Adding or Editing Pohon */}
       {showModal && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>{newPohon.id ? 'Update Pohon' : 'Tambah Pohon Baru'}</h2>
             <form onSubmit={handleSubmit}>
-              <label>
-                Nama Pohon:
-                <input 
-                  type="text" 
-                  name="namaPohon" 
-                  value={newPohon.namaPohon} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </label>
-              <label>
-                Jenis Pohon:
-                <input 
-                  type="text" 
-                  name="jenis_pohon" 
-                  value={newPohon.jenis_pohon} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </label>
-              <label>
-                Tanggal Tanam:
-                <input 
-                  type="date" 
-                  name="tanggal_tanam" 
-                  value={newPohon.tanggal_tanam} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </label>
-              <label>
-                Penanam:
-                <input 
-                  type="text" 
-                  name="penanam" 
-                  value={newPohon.penanam} 
-                  onChange={handleChange} 
-                  required 
-                />
-              </label>
+              <label>Nama Pohon:</label>
+              <input type="text" name="namaPohon" value={newPohon.namaPohon} onChange={handleChange} required />
 
-              <label>
-                Gambar:
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageChange} 
-                />
-              </label>
+              <label>Jenis Pohon:</label>
+              <input type="text" name="jenis_pohon" value={newPohon.jenis_pohon} onChange={handleChange} required />
+
+              <label>Tanggal Tanam:</label>
+              <input type="date" name="tanggal_tanam" value={newPohon.tanggal_tanam} onChange={handleChange} required />
+
+              <label>Gambar:</label>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+
               {newPohon.gambarPreview && <img src={newPohon.gambarPreview} alt="Preview" className="image-preview" />}
 
               <label>Pilih Lokasi (klik peta):</label>
-              <MapContainer 
-                center={newPohon.lokasi || { lat: -7.7839, lng: 110.3679 }} 
-                zoom={13} 
-                style={{ height: "200px", width: "100%", borderRadius: "8px" }}
-              >
-                <TileLayer 
-                  attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>' 
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-                />
-                <LocationPicker 
-                  position={newPohon.lokasi} // Position should always be valid now
-                  setPosition={handlePositionChange} 
-                />
+              <MapContainer center={newPohon.lokasi} zoom={13} style={{ height: "200px", width: "100%", borderRadius: "8px" }}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <LocationPicker position={newPohon.lokasi} setPosition={handlePositionChange} />
               </MapContainer>
 
               <button type="submit" className="btn-submit">{newPohon.id ? 'Update' : 'Tambah'}</button>
@@ -259,8 +334,7 @@ const Pohonku = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="pohonku-footer">
+      <footer className="footer">
         <div className="footer-links">
           <span>Syarat dan Ketentuan</span>
           <Link to="/faq">FAQ</Link>
