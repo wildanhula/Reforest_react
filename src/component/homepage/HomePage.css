@@ -321,3 +321,9 @@ html, body, #root {
 .auth-button:hover {
   background-color: #1b5e20;
 }
+
+.article-meta {
+  font-size: 0.75rem; /* Ukuran font lebih kecil */
+  color: #777; /* Warna teks yang lebih terang */
+  margin-top: 5px;
+}

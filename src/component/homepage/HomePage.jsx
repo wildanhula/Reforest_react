@@ -36,6 +36,8 @@ const HomePage = () => {
         }
 
         const result = await response.json();
+        console.log(result.data); // Debugging untuk melihat data yang diterima
+
         if (result.success) {
           setArtikelData(result.data.slice(0, 3)); // Menampilkan 3 artikel terakhir
         } else {
@@ -124,7 +126,18 @@ const HomePage = () => {
                   </div>
                   <div className="article-content">
                     <h3>{article.title || 'Judul Artikel'}</h3>
-                    <p>{article.deskripsi || 'Deskripsi artikel tidak tersedia'}</p>
+                    <p>{article.isi ? article.isi : 'Deskripsi artikel tidak tersedia'}</p>
+                    <div className="article-meta">
+                      {article.created_at && (
+                        <span>
+                          📅 {new Date(article.created_at).toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))
