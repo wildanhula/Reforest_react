@@ -1,75 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import './HomePage.css';
 import heroImg from '../assets/hero2.jpg';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const HomePage = () => {
   const [artikelData, setArtikelData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // State untuk statistik
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPohon: 0,
-    totalPohonPerUser: [], // Menggunakan array kosong sebagai default
+    totalPohonPerUser: [],
   });
 
-  // Mengambil data artikel dan statistik dari API
+  const { userId } = useParams();
+  const user = JSON.parse(localStorage.getItem('user'));
+
   useEffect(() => {
+    if (!user || user.id.toString() !== userId) {
+      setError('Anda tidak diizinkan mengakses halaman ini.');
+      setLoading(false);
+      return;
+    }
+
     const fetchArtikelData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/artikel/all'); // Mengambil data artikel
+        const response = await fetch(`${API_URL}/artikel/all`);
         if (!response.ok) throw new Error('Gagal mengambil data dari API');
         const result = await response.json();
         if (result.status === 'Success') {
-          setArtikelData(result.data.artikel.slice(0, 3));  // Menampilkan 3 artikel terakhir
+          setArtikelData(result.data.artikel.slice(0, 3));
         } else {
           throw new Error(result.message || 'Terjadi kesalahan pada server');
         }
-        setLoading(false);
       } catch (err) {
-        setError(err.message);  // Menangani error jika gagal mengambil data artikel
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
-    // Mengambil data statistik
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:8000/stats'); // Mengambil statistik
+        const response = await fetch(`${API_URL}/stats`);
         if (!response.ok) throw new Error('Gagal mengambil data statistik');
         const result = await response.json();
-        console.log(result);  // Debugging: Memeriksa data yang diterima dari API
         if (result.status === 'success') {
-          setStats(result.data);  // Menyimpan data statistik ke state
+          setStats(result.data);
         } else {
           throw new Error(result.message || 'Terjadi kesalahan pada server');
         }
       } catch (err) {
-        console.error('Error fetching stats:', err);  // Menangani error jika gagal mengambil data statistik
+        console.error('Error fetching stats:', err);
       }
     };
 
-    fetchArtikelData(); // Panggil fungsi untuk mengambil artikel
-    fetchStats(); // Panggil fungsi untuk mengambil statistik
-  }, []); // [] memastikan hanya dipanggil sekali setelah render pertama
+    fetchArtikelData();
+    fetchStats();
+  }, [userId, user]);
 
-  const defaultImage = 'https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60';
-
-  // Jika masih memuat data, tampilkan loading
   if (loading) return <div className="loading">Memuat data...</div>;
-  // Jika ada error, tampilkan pesan error
   if (error) return <div className="error">Error: {error}</div>;
-
-  console.log(stats); // Debugging: Memeriksa nilai state stats
 
   return (
     <>
-      <section
-        className="hero-section"
-        style={{ backgroundImage: `url(${heroImg})` }} // Menetapkan gambar latar belakang
-      >
+      <section className="hero-section" style={{ backgroundImage: `url(${heroImg})` }}>
         <div className="hero-overlay">
           <div className="hero-content">
             <h1>Reforest</h1>
@@ -79,7 +76,6 @@ const HomePage = () => {
               Reforest mempermudah Anda mendokumentasikan setiap pohon yang ditanam,
               memantau pertumbuhannya, dan melihat dampak kontribusi Anda terhadap kelestarian bumi.
             </p>
-            {/* Button untuk mengarahkan ke halaman pohonku */}
             <Link to="/pohonku" style={{ textDecoration: 'none' }}>
               <button className="cta-button">Mulai Menanam</button>
             </Link>
@@ -91,15 +87,14 @@ const HomePage = () => {
         <section className="articles-section">
           <h2>ARTIKEL</h2>
           <div className="articles-grid">
-            {/* Jika data artikel ada, tampilkan artikel */}
             {artikelData.length > 0 ? (
               artikelData.map(article => (
                 <article key={article.id} className="article-card">
                   <div className="article-image">
                     <img
-                      src={article.gambar || defaultImage} // Gunakan gambar default jika tidak ada
+                      src={article.gambar || 'https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'}
                       alt={article.title || article.nama || 'Gambar Artikel'}
-                      onError={e => (e.target.src = defaultImage)} // Jika gambar error, tampilkan gambar default
+                      onError={e => (e.target.src = 'https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')}
                     />
                   </div>
                   <div className="article-content">
@@ -109,43 +104,27 @@ const HomePage = () => {
                 </article>
               ))
             ) : (
-              <div className="empty-message">Tidak ada artikel tersedia</div> // Menampilkan pesan jika artikel kosong
+              <div className="empty-message">Tidak ada artikel tersedia</div>
             )}
           </div>
-          <Link to="/artikel" className="read-more-link">Read More</Link> {/* Link untuk membaca lebih banyak artikel */}
+          <Link to="/artikel" className="read-more-link">Read More</Link>
         </section>
 
-        {/* Statistik Reforest */}
         <section className="stats-section">
           <h2>Statistik Reforest</h2>
           <div className="stats">
             <div className="stat-item">
               <h3>Total User</h3>
-              <p>{stats.totalUsers}</p> {/* Menampilkan total user */}
+              <p>{stats.totalUsers}</p>
             </div>
             <div className="stat-item">
               <h3>Total Pohon</h3>
-              <p>{stats.totalPohon}</p> {/* Menampilkan total pohon */}
+              <p>{stats.totalPohon}</p>
             </div>
-
-            {/* Statistik Pohon per User yang sudah di-nonaktifkan */}
-            {/*
-            <div className="stat-item">
-              <h3>Pohon per User</h3>
-              <ul>
-                {stats.totalPohonPerUser.map((userStats, index) => (
-                  <li key={index}>
-                    User ID {userStats.user_id}: {userStats.total_pohon} pohon
-                  </li>
-                ))}
-              </ul>
-            </div>
-            */}
           </div>
         </section>
       </div>
 
-      {/* Footer */}
       <footer className="footer">
         <div className="footer-links">
           <span>Syarat dan Ketentuan</span>
