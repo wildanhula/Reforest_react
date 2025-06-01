@@ -100,7 +100,7 @@ const AddPohonForm = ({ onClose, onAdded }) => {
 
       const result = await response.json();
 
-      if (result.success === true ) {
+      if (result.status === 'success' ) {
         toast.success('Pohon berhasil ditambahkan');
         onAdded();
         onClose();
