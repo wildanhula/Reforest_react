@@ -1,27 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
-import logo from '../assets/logo.png'; // Import gambar logo
+import logo from '../assets/logo.png';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/user';
 
 const Navbar = ({ activePage }) => {
-  const location = useLocation(); // Get current route
-
-  // Check if the current route is the landing page ("/")
+  const location = useLocation();
   const isLandingPage = location.pathname === '/';
+
+  const [user, setUser] = useState(null);
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${API_URL}/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data.data);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, [token]);
+
+  const profilePhoto = user?.user_image?.image_url || '../assets/profile-placeholder.png';
 
   return (
     <nav className="navbar">
-      {/* Logo as a local image */}
       <div className="navbar-brand">
-        <img 
-          src={logo} 
-          alt="Reforest Logo" 
-          className="navbar-logo"
-        />
+        <img src={logo} alt="Reforest Logo" className="navbar-logo" />
       </div>
-      
       <ul className="navbar-menu">
-        {/* Show this for all routes except landing page */}
         {!isLandingPage && (
           <>
             <li className={`navbar-item ${activePage === 'home' ? 'active' : ''}`}>
@@ -39,28 +64,18 @@ const Navbar = ({ activePage }) => {
             <li className={`navbar-item ${activePage === 'faq' ? 'active' : ''}`}>
               <Link to="/faq">FAQs</Link>
             </li>
+            <li className="navbar-profile">
+              <Link to="/profile" className="profile-link">
+                <img src={profilePhoto} alt="Profile" className="profile-pic" />
+              </Link>
+            </li>
           </>
         )}
 
-        {/* Show profile link only if not on landing page */}
-        {!isLandingPage && (
-          <li className="navbar-profile">
-            <Link to="/profile" className="profile-link">
-              <img 
-                src="../assets/profile-placeholder.png" 
-                alt="Profile" 
-                className="profile-pic"
-              />
-            </Link>
-          </li>
-        )}
-
-        {/* Display Login and Signup buttons only on the landing page */}
         {isLandingPage && (
           <div className="auth-buttons">
             <Link to="/login" className="auth-button">Login</Link>
             <Link to="/login#signup" className="auth-button">Sign Up</Link>
-            {/* Counter is removed from here */}
           </div>
         )}
       </ul>

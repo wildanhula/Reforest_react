@@ -19,10 +19,9 @@ const LoginSignup = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate();  // Initialize navigate hook
-  const location = useLocation(); // Hook untuk mendapatkan informasi location saat ini
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Mengecek hash URL untuk menyesuaikan section yang ditampilkan
   useEffect(() => {
     if (location.hash === '#signup') {
       setAction('Sign Up');
@@ -107,12 +106,11 @@ const LoginSignup = () => {
       const data = await handleAuthRequest(endpoint, payload);
 
       if ((action === 'Login' && data.status === 'success') || (action === 'Sign Up' && data.status === 'success')) {
-        // Save user data to localStorage
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        // Simpan user dan token ke localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('token', data.token);
 
-        // After successful registration, switch to Login
         if (action === 'Sign Up') {
-          // Automatically switch to login section after successful signup
           setAction('Login');
           setFormData({
             username: '',
@@ -120,12 +118,9 @@ const LoginSignup = () => {
             password: '',
             password_confirmation: '',
           });
-
-          // Navigate to the login section
-          navigate('/login');  // Redirect to login page
+          navigate('/login');
         } else {
-          // After successful login, navigate to the dashboard
-          navigate('/home');  // Redirect to /home (dashboard) page
+          navigate('/home');
         }
       }
     } catch (error) {

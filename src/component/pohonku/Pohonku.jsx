@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'; 
-import { Link } from 'react-router-dom'; 
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet"; 
-import L from "leaflet"; 
-import './Pohonku.css'; 
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import L from "leaflet";
+import './Pohonku.css';
 
-// Custom marker icon supaya gak default icon leaflet
 const customIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", 
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
   iconSize: [32, 32],
   iconAnchor: [16, 32],
 });
@@ -14,7 +15,7 @@ const customIcon = new L.Icon({
 const LocationPicker = ({ position, setPosition }) => {
   useMapEvents({
     click(e) {
-      setPosition(e.latlng); 
+      setPosition(e.latlng);
     },
   });
 
@@ -23,75 +24,281 @@ const LocationPicker = ({ position, setPosition }) => {
 
 const DUMMY_IMAGE_URL = 'https://cdn.pixabay.com/photo/2015/12/01/20/28/forest-1072828_960_720.jpg';
 
+// Form Tambah Pohon
+const AddPohonForm = ({ onClose, onAdded }) => {
+  const token = localStorage.getItem('token');
+
+  const [form, setForm] = useState({
+    namaPohon: '',
+    jenis_pohon: '',
+    tanggal_tanam: '',
+    lat: -7.7839,
+    long: 110.3679,
+    gambar: null,
+    gambarPreview: null,
+  });
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran file terlalu besar. Maksimal 5MB.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Format file tidak didukung. Gunakan JPEG, PNG, atau GIF.');
+      return;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      gambar: file,
+      gambarPreview: URL.createObjectURL(file),
+    }));
+  };
+
+  const handlePositionChange = (pos) => {
+    setForm(prev => ({
+      ...prev,
+      lat: pos.lat,
+      long: pos.lng,
+    }));
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+
+    if (!form.gambar) {
+      toast.error('Mohon pilih gambar untuk pohon baru');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('namaPohon', form.namaPohon);
+    formData.append('jenis_pohon', form.jenis_pohon);
+    formData.append('tanggal_tanam', form.tanggal_tanam);
+    formData.append('lat', form.lat);
+    formData.append('long', form.long);
+    formData.append('image', form.gambar);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/pohonku/post', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        toast.success('Pohon berhasil ditambahkan');
+        onAdded();
+        onClose();
+      } else {
+        toast.error(result.message || 'Gagal menambahkan pohon');
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat menyimpan data');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>Nama Pohon:</label>
+      <input type="text" name="namaPohon" value={form.namaPohon} onChange={handleChange} required />
+
+      <label>Jenis Pohon:</label>
+      <input type="text" name="jenis_pohon" value={form.jenis_pohon} onChange={handleChange} required />
+
+      <label>Tanggal Tanam:</label>
+      <input type="date" name="tanggal_tanam" value={form.tanggal_tanam} onChange={handleChange} required />
+
+      <label>Gambar:</label>
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+      {form.gambarPreview && <img src={form.gambarPreview} alt="Preview" className="image-preview" />}
+
+      <label>Pilih Lokasi (klik peta):</label>
+      <MapContainer center={{ lat: form.lat, lng: form.long }} zoom={13} style={{ height: "200px", width: "100%", borderRadius: "8px" }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationPicker position={{ lat: form.lat, lng: form.long }} setPosition={handlePositionChange} />
+      </MapContainer>
+
+      <button type="submit" className="btn-submit">Tambah</button>
+      <button type="button" className="btn-cancel" onClick={onClose}>Batal</button>
+    </form>
+  );
+};
+
+// Form Edit Pohon
+const EditPohonForm = ({ pohon, onClose, onUpdated }) => {
+  const token = localStorage.getItem('token');
+
+  const [form, setForm] = useState({
+    id: pohon.id,
+    namaPohon: pohon.namaPohon,
+    jenis_pohon: pohon.jenis_pohon,
+    tanggal_tanam: pohon.tanggal_tanam.slice(0,10), // format yyyy-mm-dd
+    lat: parseFloat(pohon.lat),
+    long: parseFloat(pohon.long),
+    gambar: null,
+    gambarPreview: pohon.images && pohon.images[0]
+      ? `http://localhost:8000/storage/images/${pohon.images[0].filename}`
+      : DUMMY_IMAGE_URL,
+  });
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran file terlalu besar. Maksimal 5MB.');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Format file tidak didukung. Gunakan JPEG, PNG, atau GIF.');
+      return;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      gambar: file,
+      gambarPreview: URL.createObjectURL(file),
+    }));
+  };
+
+  const handlePositionChange = (pos) => {
+    setForm(prev => ({
+      ...prev,
+      lat: pos.lat,
+      long: pos.lng,
+    }));
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('namaPohon', form.namaPohon);
+    formData.append('jenis_pohon', form.jenis_pohon);
+    formData.append('tanggal_tanam', form.tanggal_tanam);
+    formData.append('lat', form.lat);
+    formData.append('long', form.long);
+    formData.append('_method', 'PUT'); // override method
+
+    if (form.gambar) {
+      formData.append('image', form.gambar);
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/pohonku/update/${form.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        toast.success('Pohon berhasil diperbarui');
+        onUpdated();
+        onClose();
+      } else {
+        toast.error(result.message || 'Gagal memperbarui pohon');
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat memperbarui data');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>Nama Pohon:</label>
+      <input type="text" name="namaPohon" value={form.namaPohon} onChange={handleChange} required />
+
+      <label>Jenis Pohon:</label>
+      <input type="text" name="jenis_pohon" value={form.jenis_pohon} onChange={handleChange} required />
+
+      <label>Tanggal Tanam:</label>
+      <input type="date" name="tanggal_tanam" value={form.tanggal_tanam} onChange={handleChange} required />
+
+      <label>Gambar:</label>
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+      {form.gambarPreview && <img src={form.gambarPreview} alt="Preview" className="image-preview" />}
+
+      <label>Pilih Lokasi (klik peta):</label>
+      <MapContainer center={{ lat: form.lat, lng: form.long }} zoom={13} style={{ height: "200px", width: "100%", borderRadius: "8px" }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationPicker position={{ lat: form.lat, lng: form.long }} setPosition={handlePositionChange} />
+      </MapContainer>
+
+      <button type="submit" className="btn-submit">Update</button>
+      <button type="button" className="btn-cancel" onClick={onClose}>Batal</button>
+    </form>
+  );
+};
+
 const Pohonku = () => {
   const [pohonData, setPohonData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [newPohon, setNewPohon] = useState({
-    id: '',
-    namaPohon: '',
-    jenis_pohon: '',
-    tanggal_tanam: '',
-    lat: '',
-    long: '',
-    gambar: null,
-    gambarPreview: null,
-    lokasi: { lat: -7.7839, lng: 110.3679 }, 
-  });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editPohon, setEditPohon] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem('user')); // Ambil data user dari localStorage
+  const token = localStorage.getItem('token');
 
-  // Fetch data from backend
-  const fetchPohonData = async () => {
+  const fetchPohonData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/pohonku/all', {
+      const response = await fetch('http://localhost:8000/api/pohonku/my', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
       const result = await response.json();
-      console.log('API Response:', result);
 
-      // Sesuaikan dengan struktur response baru
       if (result.success === true || result.status === 'success') {
         const dataArray = Array.isArray(result.data) ? result.data : [];
         setPohonData(dataArray);
-        console.log('Data loaded:', dataArray.length, 'items');
       } else {
         throw new Error(result.message || 'Terjadi kesalahan pada server');
       }
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError(err.message); 
-      setPohonData([]); // Set empty array on error
+      setError(err.message);
+      setPohonData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    fetchPohonData();  // Fetch initial pohon data
-  }, []);
+    fetchPohonData();
+  }, [fetchPohonData]);
 
-  // Handle edit for a tree
-  const handleEdit = (pohon) => {
-    setNewPohon({
-      ...pohon,
-      gambarPreview: pohon.gambarUrl || DUMMY_IMAGE_URL, 
-      lokasi: { lat: parseFloat(pohon.lat), lng: parseFloat(pohon.long) },
-    });
-    setShowModal(true);
-  };
-
-  // Handle delete for a tree
   const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus data pohon ini?')) {
       try {
@@ -100,161 +307,32 @@ const Pohonku = () => {
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
 
         const result = await response.json();
-        console.log('Delete response:', result);
 
         if (result.success === true) {
-          alert('Pohon berhasil dihapus');
-          // Update state to remove deleted item
+          toast.success('Pohon berhasil dihapus');
           setPohonData(prevData => prevData.filter(pohon => pohon.id !== id));
         } else {
-          alert(result.message || 'Gagal menghapus pohon');
+          toast.error(result.message || 'Gagal menghapus pohon');
         }
       } catch (error) {
-        console.error('Delete error:', error);
-        alert('Terjadi kesalahan saat menghapus pohon');
+        toast.error('Terjadi kesalahan saat menghapus pohon');
       }
     }
   };
 
-  // Handle form field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewPohon(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+  const openEditModal = (pohon) => {
+    setEditPohon(pohon);
+    setShowEditModal(true);
   };
-
-  // Handle image change
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file terlalu besar. Maksimal 5MB.');
-      return;
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Format file tidak didukung. Gunakan JPEG, PNG, atau GIF.');
-      return;
-    }
-
-    setNewPohon(prev => ({
-      ...prev,
-      gambar: file,
-      gambarPreview: URL.createObjectURL(file),
-    }));
-  };
-
-  // Handle form submission for adding or updating a tree
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!newPohon.namaPohon || !newPohon.jenis_pohon || !newPohon.tanggal_tanam) {
-      alert('Mohon lengkapi semua field yang wajib diisi');
-      return;
-    }
-
-    if (!newPohon.lat || !newPohon.long) {
-      alert('Mohon pilih lokasi di peta');
-      return;
-    }
-
-    if (!newPohon.id && !newPohon.gambar) {
-      alert('Mohon pilih gambar untuk pohon baru');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('namaPohon', newPohon.namaPohon);
-    formData.append('jenis_pohon', newPohon.jenis_pohon);
-    formData.append('tanggal_tanam', newPohon.tanggal_tanam);
-    formData.append('lat', newPohon.lat);
-    formData.append('long', newPohon.long);
-    formData.append('user_id', user ? user.id : 1); // Use user ID from localStorage
-    
-    if (newPohon.gambar) {
-      formData.append('image', newPohon.gambar);
-    }
-
-    try {
-      const endpoint = newPohon.id 
-        ? `http://localhost:8000/api/pohonku/update/${newPohon.id}` 
-        : 'http://localhost:8000/api/pohonku/post';
-      const method = newPohon.id ? 'PUT' : 'POST';
-
-      const response = await fetch(endpoint, {
-        method: method,
-        body: formData,
-      });
-
-      const result = await response.json();
-      console.log('Submit response:', result);
-
-      if (result.status === 'success') {
-        alert(`${newPohon.id ? 'Pohon berhasil diperbarui' : 'Pohon berhasil ditambahkan'}`);
-
-        // Refresh the pohon data after successful add or update
-        fetchPohonData();
-
-        setShowModal(false);
-        resetForm();
-      } else {
-        alert(result.message || 'Gagal menyimpan pohon');
-      }
-    } catch (error) {
-      console.error('Submit error:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
-    }
-  };
-
-  // Reset form
-  const resetForm = () => {
-    setNewPohon({
-      id: '', 
-      namaPohon: '',
-      jenis_pohon: '',
-      tanggal_tanam: '',
-      lat: '',
-      long: '',
-      user_id: user ? user.id : 1,  // Ensure the user_id is updated
-      gambar: null,
-      gambarPreview: null,
-      lokasi: { lat: -7.7839, lng: 110.3679 }, 
-    });
-  };
-
-  // Modal logic
-  const handleOpenModal = () => {
-    resetForm();
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    resetForm();
-  };
-
-  const handlePositionChange = (position) => {
-    setNewPohon(prev => ({
-      ...prev,
-      lokasi: position, 
-      lat: position.lat,
-      long: position.lng,
-    }));
-  };
-
-  if (loading) return <div className="pohonku-loading">Memuat data pohon...</div>;
-  if (error) return <div className="pohonku-error">Error: {error}</div>;
 
   return (
     <>
+      <ToastContainer position="bottom-right" autoClose={3000} />
       <div className="pohonku-container">
         <h1 className="pohonku-title">Daftar pohon yang sudah Anda tanam</h1>
         <div className="pohonku-row">
@@ -262,7 +340,7 @@ const Pohonku = () => {
             <div key={pohon.id} className="pohonku-item">
               <div className="pohonku-image-container">
                 <img
-                  src={pohon.images[0] ? `http://localhost:8000/storage/images/${pohon.images[0].filename}` : DUMMY_IMAGE_URL}
+                  src={pohon.images && pohon.images[0] ? `http://localhost:8000/storage/images/${pohon.images[0].filename}` : DUMMY_IMAGE_URL}
                   alt={pohon.namaPohon}
                   className="pohonku-image"
                 />
@@ -273,12 +351,8 @@ const Pohonku = () => {
                 <p><strong>Tanggal Tanam:</strong> {new Date(pohon.tanggal_tanam).toLocaleDateString()}</p>
                 <p><strong>Lokasi:</strong> Lat {pohon.lat}, Long {pohon.long}</p>
                 <div className="pohonku-button-group">
-                  <button className="pohonku-btn pohonku-btn-edit" onClick={() => handleEdit(pohon)}>
-                    Edit
-                  </button>
-                  <button className="pohonku-btn pohonku-btn-delete" onClick={() => handleDelete(pohon.id)}>
-                    Delete
-                  </button>
+                  <button className="pohonku-btn pohonku-btn-edit" onClick={() => openEditModal(pohon)}>Edit</button>
+                  <button className="pohonku-btn pohonku-btn-delete" onClick={() => handleDelete(pohon.id)}>Delete</button>
                 </div>
               </div>
             </div>
@@ -286,43 +360,34 @@ const Pohonku = () => {
         </div>
       </div>
 
-      <button className="floating-btn" onClick={handleOpenModal}>
-        +
-      </button>
+      <button className="floating-btn" onClick={() => setShowAddModal(true)}>+</button>
 
-      {showModal && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{newPohon.id ? 'Update Pohon' : 'Tambah Pohon Baru'}</h2>
-            <form onSubmit={handleSubmit}>
-              <label>Nama Pohon:</label>
-              <input type="text" name="namaPohon" value={newPohon.namaPohon} onChange={handleChange} required />
-
-              <label>Jenis Pohon:</label>
-              <input type="text" name="jenis_pohon" value={newPohon.jenis_pohon} onChange={handleChange} required />
-
-              <label>Tanggal Tanam:</label>
-              <input type="date" name="tanggal_tanam" value={newPohon.tanggal_tanam} onChange={handleChange} required />
-
-              <label>Gambar:</label>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-
-              {newPohon.gambarPreview && <img src={newPohon.gambarPreview} alt="Preview" className="image-preview" />}
-
-              <label>Pilih Lokasi (klik peta):</label>
-              <MapContainer center={newPohon.lokasi} zoom={13} style={{ height: "200px", width: "100%", borderRadius: "8px" }}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <LocationPicker position={newPohon.lokasi} setPosition={handlePositionChange} />
-              </MapContainer>
-
-              <button type="submit" className="btn-submit">{newPohon.id ? 'Update' : 'Tambah'}</button>
-              <button type="button" className="btn-cancel" onClick={handleCloseModal}>Batal</button>
-            </form>
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2>Tambah Pohon Baru</h2>
+            <AddPohonForm
+              onClose={() => setShowAddModal(false)}
+              onAdded={fetchPohonData}
+            />
           </div>
         </div>
       )}
 
-      <footer className="footer">
+      {showEditModal && editPohon && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2>Update Pohon</h2>
+            <EditPohonForm
+              pohon={editPohon}
+              onClose={() => setShowEditModal(false)}
+              onUpdated={fetchPohonData}
+            />
+          </div>
+        </div>
+      )}
+
+      <footer className="faq-footer">
         <div className="footer-links">
           <span>Syarat dan Ketentuan</span>
           <Link to="/faq">FAQ</Link>

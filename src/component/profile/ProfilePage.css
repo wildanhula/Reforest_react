@@ -1,68 +1,66 @@
-/* Main container styling */
 .profile-container {
-  width: 400px;
-  margin: 50px auto;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  font-family: 'Arial', sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-/* Header styling */
-.profile-header h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
+.profile-header {
+  text-align: center;
   margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #0a84ff;
 }
 
-/* Profile content styling */
+.profile-content {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+}
+
 .profile-list {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  margin: 0;
+  line-height: 1.8;
 }
 
-.profile-list li {
-  padding: 12px 0;
-  font-size: 16px;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
+.profile-photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 20px;
 }
 
-/* Divider styling */
 .divider {
   height: 1px;
   background-color: #ccc;
   margin: 20px 0;
 }
 
-/* Update section styling */
-.update-section h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  margin-top: 10px;
+.update-section input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
 }
 
-/* Using the same color scheme as login page */
-.profile-header h1 {
-  color: #333;
+.update-section button {
+  padding: 10px 20px;
+  background-color: #2979ff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.profile-list li {
-  color: #333;
+.delete-section {
+  margin-top: 30px;
+  text-align: right;
 }
 
-.update-section h2 {
-  color: #333;
-}
-
-/* Optional: Add hover effects similar to login page */
-.profile-list li:hover {
-  background-color: #f9f9f9;
-  cursor: default;
+.delete-btn {
+  padding: 8px 16px;
+  background-color: #e53935;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
