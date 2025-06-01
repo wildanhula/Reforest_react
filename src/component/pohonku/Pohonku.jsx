@@ -100,7 +100,7 @@ const AddPohonForm = ({ onClose, onAdded }) => {
 
       const result = await response.json();
 
-      if (result.status === 'success') {
+      if (result.success === true) {
         toast.success('Pohon berhasil ditambahkan');
         onAdded();
         onClose();
@@ -217,7 +217,7 @@ const EditPohonForm = ({ pohon, onClose, onUpdated }) => {
 
       const result = await response.json();
 
-      if (result.status === 'success') {
+      if (result.success === true) {
         toast.success('Pohon berhasil diperbarui');
         onUpdated();
         onClose();
@@ -329,6 +329,14 @@ const Pohonku = () => {
     setEditPohon(pohon);
     setShowEditModal(true);
   };
+
+  if (loading) {
+    return <p>Loading data pohon...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
 
   return (
     <>
