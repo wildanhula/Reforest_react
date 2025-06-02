@@ -23,9 +23,9 @@ const Lokasi = () => {
         setLoading(true);
         setError(null);
         
-        console.log('Calling API:', 'http://localhost:8000/api/pohonku/all');
+        console.log('Calling API:', 'http://localhost:8000/api/pohonku/map');
         
-        const response = await fetch('http://localhost:8000/api/pohonku/all', {
+        const response = await fetch('http://localhost:8000/api/pohonku/map', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
