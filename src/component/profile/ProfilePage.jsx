@@ -16,7 +16,6 @@ const ProfilePage = () => {
 
   const token = localStorage.getItem('token');
 
-  // Gunakan useCallback supaya referensi stabil
   const fetchUserData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -46,7 +45,6 @@ const ProfilePage = () => {
     }
   }, [token]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
@@ -78,7 +76,7 @@ const ProfilePage = () => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
-          // Jangan set 'Content-Type' saat pakai FormData
+          // Jangan set Content-Type kalau FormData
         },
         body: formData,
       });
@@ -124,6 +122,11 @@ const ProfilePage = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
+
   if (isLoading && !user) return <p>Loading...</p>;
 
   return (
@@ -165,15 +168,24 @@ const ProfilePage = () => {
             name="profile_photo"
             onChange={handleChange}
           />
-          <button onClick={handleUpdate} disabled={isLoading}>
-            {isLoading ? 'Menyimpan...' : 'Simpan'}
-          </button>
+
+          <div className="button-row">
+            <button onClick={handleUpdate} disabled={isLoading} className="save-btn">
+              {isLoading ? 'Menyimpan...' : 'Simpan'}
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="delete-btn"
+              style={{ marginLeft: '10px' }}
+            >
+              {isLoading ? 'Memproses...' : 'Hapus Akun'}
+            </button>
+          </div>
         </div>
 
-        <div className="delete-section">
-          <button className="delete-btn" onClick={handleDelete} disabled={isLoading}>
-            {isLoading ? 'Memproses...' : 'Hapus Akun'}
-          </button>
+        <div className="logout-section">
+          <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
     </div>
