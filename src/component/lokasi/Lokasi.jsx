@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import './Lokasi.css';
 import { Link } from 'react-router-dom';
@@ -23,8 +23,6 @@ const Lokasi = () => {
         setLoading(true);
         setError(null);
         
-        console.log('Calling API:', 'http://localhost:8000/api/pohonku/map');
-        
         const response = await fetch('http://localhost:8000/api/pohonku/map', {
           method: 'GET',
           headers: {
@@ -33,67 +31,26 @@ const Lokasi = () => {
           },
           mode: 'cors', // Explicitly set CORS mode
         });
-        
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
-        // Check if response is ok
+
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Response error text:', errorText);
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        // Check content type
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const responseText = await response.text();
-          console.error('Non-JSON response:', responseText);
-          throw new Error('Server returned non-JSON response');
-        }
-        
+
         const result = await response.json();
-        console.log('Full API Response:', result);
-        console.log('Response status field:', result.status);
-        console.log('Response success field:', result.success);
         
-        // Check response structure - handle both 'status' and 'success' fields
-        if (result.status === 'success' || result.success === true) {
-          let dataToSet = [];
-          
-          // Original controller structure: result.data is direct array
-          if (Array.isArray(result.data)) {
-            dataToSet = result.data;
-            console.log('Using result.data directly (array):', dataToSet.length, 'items');
-          } else if (result.data && result.data.pohonku) {
-            dataToSet = result.data.pohonku;
-            console.log('Using result.data.pohonku:', dataToSet.length, 'items');
-          } else if (result.data) {
-            dataToSet = [result.data];
-            console.log('Wrapping single result.data in array');
-          } else {
-            dataToSet = [];
-            console.log('No data found, using empty array');
-          }
-          
-          setPohonData(dataToSet);
-          console.log('Final data set:', dataToSet);
+        if (result.success) {
+          setPohonData(result.data);
         } else {
-          console.error('Server error response:', result);
-          throw new Error(result.message || result.error || 'Server returned error status');
+          throw new Error(result.message || 'Server returned error status');
         }
       } catch (err) {
-        console.error('Fetch error details:', {
-          message: err.message,
-          stack: err.stack,
-          name: err.name
-        });
         setError(`Connection failed: ${err.message}`);
         setPohonData([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchPohonData();
   }, []);
@@ -125,7 +82,7 @@ const Lokasi = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {/* Loop through pohonData and add markers for each tree */}
-          {pohonData && pohonData.length > 0 && pohonData.map((pohon) => {
+          {pohonData.map((pohon) => {
             const lat = parseFloat(pohon.lat);
             const lng = parseFloat(pohon.long);
             
@@ -140,7 +97,14 @@ const Lokasi = () => {
                 key={pohon.id} 
                 position={{ lat, lng }} 
                 icon={customIcon}
-              />
+              >
+                <Popup>
+                  <div>
+                    <strong>Nama Pohon:</strong> {pohon.namaPohon}<br />
+                    <strong>Pemilik:</strong> {pohon.username}
+                  </div>
+                </Popup>
+              </Marker>
             );
           })}
         </MapContainer>
@@ -161,5 +125,6 @@ const Lokasi = () => {
     </>
   );
 };
+
 
 export default Lokasi;

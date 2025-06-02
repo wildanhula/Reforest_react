@@ -6,6 +6,7 @@ const Artikel = () => {
   const [artikelData, setArtikelData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedArtikel, setSelectedArtikel] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,10 +39,57 @@ const Artikel = () => {
     groupedArtikel.push(artikelData.slice(i, i + 3));
   }
 
+  const handleArtikelClick = (artikel) => {
+    setSelectedArtikel(artikel);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Fungsi bantu untuk potong isi
+  const truncateText = (text, maxLength) => {
+    if (!text) return 'Tidak ada konten';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
   return (
     <>
       <div className="artikel-container">
         <h1 className="judul-artikel">Artikel Terbaru</h1>
+
+        {/* SECTION DETAIL */}
+        {selectedArtikel && (
+          <div className="artikel-detail-section">
+            <button onClick={() => setSelectedArtikel(null)} className="btn-kembali">← Kembali</button>
+            <h2>{selectedArtikel.title}</h2>
+            <img
+              src={
+                selectedArtikel.images && selectedArtikel.images.length > 0
+                  ? selectedArtikel.images[0].image_url
+                  : defaultImage
+              }
+              alt={selectedArtikel.title}
+              className="detail-image"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = defaultImage;
+              }}
+            />
+            <p>{selectedArtikel.isi}</p>
+            <div className="pohon-meta">
+              {selectedArtikel.created_at && (
+                <span>
+                  📅 {new Date(selectedArtikel.created_at).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </span>
+              )}
+            </div>
+            <hr />
+          </div>
+        )}
+
+        {/* LIST ARTIKEL */}
         {groupedArtikel.map((row, rowIndex) => (
           <div className="artikel-row" key={rowIndex}>
             {row.map((artikel, i) => {
@@ -54,14 +102,18 @@ const Artikel = () => {
                   ? 'panjang'
                   : 'kecil';
 
-              // Ambil gambar pertama dari images, atau gunakan default
               const gambarUrl =
                 artikel.images && artikel.images.length > 0
                   ? artikel.images[0].image_url
                   : defaultImage;
 
               return (
-                <div className={`pohon-item ${layoutClass}`} key={artikel.id}>
+                <div
+                  className={`pohon-item ${layoutClass}`}
+                  key={artikel.id}
+                  onClick={() => handleArtikelClick(artikel)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="pohon-image-container">
                     <img
                       src={gambarUrl}
@@ -75,7 +127,7 @@ const Artikel = () => {
                   </div>
                   <div className="pohon-content">
                     <h2>{artikel.title || 'Tanpa Judul'}</h2>
-                    <p>{artikel.isi || 'Tidak ada konten'}</p>
+                    <p>{truncateText(artikel.isi, 150)}</p>
                     <div className="pohon-meta">
                       {artikel.created_at && (
                         <span>
