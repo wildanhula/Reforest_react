@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';  // Import useNavigate dan useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import './loginSignup.css';
 import user_ic from '../assets/person_ic.png';
 import email_ic from '../assets/email_ic.png';
@@ -67,7 +67,7 @@ const LoginSignup = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(data),
       });
@@ -75,7 +75,11 @@ const LoginSignup = () => {
       const responseData = await response.json();
 
       if (!response.ok) {
-        const errorMessage = responseData.message || (responseData.errors ? Object.values(responseData.errors).flat().join(', ') : 'Authentication failed');
+        const errorMessage =
+          responseData.message ||
+          (responseData.errors
+            ? Object.values(responseData.errors).flat().join(', ')
+            : 'Authentication failed');
         throw new Error(errorMessage);
       }
 
@@ -105,7 +109,10 @@ const LoginSignup = () => {
 
       const data = await handleAuthRequest(endpoint, payload);
 
-      if ((action === 'Login' && data.status === 'success') || (action === 'Sign Up' && data.status === 'success')) {
+      if (
+        (action === 'Login' && data.status === 'success') ||
+        (action === 'Sign Up' && data.status === 'success')
+      ) {
         // Simpan user dan token ke localStorage
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
@@ -120,7 +127,14 @@ const LoginSignup = () => {
           });
           navigate('/login');
         } else {
-          navigate('/home');
+          // Cek role user
+          if (data.user.role === 'admin') {
+            // Redirect ke React Admin (port 3001)
+            window.location.href = `http://localhost:3001?token=${data.token}`;
+          } else {
+            // Redirect ke halaman user biasa
+            navigate('/home');
+          }
         }
       }
     } catch (error) {
@@ -150,9 +164,7 @@ const LoginSignup = () => {
           </div>
 
           {errors.apiError && (
-            <div className="alert alert-danger">
-              {errors.apiError}
-            </div>
+            <div className="alert alert-danger">{errors.apiError}</div>
           )}
 
           <div className="inputs">
@@ -168,7 +180,9 @@ const LoginSignup = () => {
                     onChange={handleChange}
                   />
                 </div>
-                {errors.username && <span className="error">{errors.username}</span>}
+                {errors.username && (
+                  <span className="error">{errors.username}</span>
+                )}
               </div>
             )}
 
@@ -197,12 +211,16 @@ const LoginSignup = () => {
                   onChange={handleChange}
                 />
               </div>
-              {errors.password && <span className="error">{errors.password}</span>}
+              {errors.password && (
+                <span className="error">{errors.password}</span>
+              )}
             </div>
 
             {action === 'Sign Up' && (
               <div className="input-wrapper">
-                <label htmlFor="password_confirmation">Password Confirmation</label>
+                <label htmlFor="password_confirmation">
+                  Password Confirmation
+                </label>
                 <div className="input">
                   <img src={password_ic} alt="password icon" />
                   <input

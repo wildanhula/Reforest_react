@@ -1,15 +1,15 @@
-import React from 'react';
+// src/component/ProtectedRoute.jsx
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
 
-  // Jika pengguna belum login, arahkan ke halaman login
-  if (!user) {
-    return <Navigate to="/login" />;
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Jika pengguna sudah login, tampilkan komponen anak
   return children;
 };
 

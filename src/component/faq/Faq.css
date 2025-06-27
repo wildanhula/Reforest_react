@@ -27,7 +27,8 @@ main {
 .faq-container {
   max-width: 900px;
   margin: 2rem auto;
-  padding: 0 1rem 100px; /* tambahkan padding-bottom agar konten tidak tertutup footer */
+  padding: 0 1rem;
+  padding-bottom: 150px; /* pastikan cukup tinggi agar konten bawah tidak tertutup footer */
 }
 
 /* Judul FAQ */

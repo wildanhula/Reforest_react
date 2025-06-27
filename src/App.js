@@ -7,21 +7,19 @@ import Pohonku from './component/pohonku/pohonku.jsx';
 import Navbar from './component/navbar/Navbar.jsx';
 import Lokasi from './component/lokasi/Lokasi.jsx';
 import Faq from './component/faq/Faq.jsx';
-import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
-import ProtectedRoute from './component/ProtectedRoute'; // Impor ProtectedRoute
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet, Navigate } from 'react-router-dom';
+import ProtectedRoute from './component/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Route for HomePage with Navbar (no login required) */}
-        <Route path="/" element={<HomepageLayoutWithNavbar />} />  {/* Homepage layout with Navbar */}
-
-        {/* Route for Login */}
+        {/* Public routes */}
+        <Route path="/" element={<HomepageLayoutWithNavbar />} />
         <Route path="/login" element={<LoginSignup />} />
         <Route path="/login#signup" element={<LoginSignup />} />
 
-        {/* Route with Navbar for other pages, protected by ProtectedRoute */}
+        {/* Protected routes */}
         <Route element={<LayoutWithNavbar />}>
           <Route
             path="/home"
@@ -72,6 +70,9 @@ function App() {
             }
           />
         </Route>
+
+        {/* Fallback untuk semua rute tak dikenal */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
@@ -83,13 +84,13 @@ function HomepageLayoutWithNavbar() {
     <div className="app-layout">
       <Navbar activePage="home" />
       <div className="content">
-        <HomePage /> {/* Directly render the homepage */}
+        <HomePage />
       </div>
     </div>
   );
 }
 
-// Layout with Navbar for other pages (protected)
+// Layout with Navbar for protected pages
 function LayoutWithNavbar() {
   const location = useLocation();
 
@@ -107,7 +108,7 @@ function LayoutWithNavbar() {
     <div className="app-layout">
       <Navbar activePage={getActivePage()} />
       <div className="content">
-        <Outlet /> {/* This will render the content of child routes */}
+        <Outlet />
       </div>
     </div>
   );
